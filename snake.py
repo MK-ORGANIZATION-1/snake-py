@@ -1,77 +1,169 @@
-# SNAKES GAME
-# Use ARROW KEYS to play, SPACE BAR for pausing/resuming and Esc Key for exiting
-
-import curses
-from curses import KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
-from random import randint
+#importing libraries
+import turtle
+import random
+import time
 
 
-curses.initscr()
-win = curses.newwin(20, 60, 0, 0)
-win.keypad(1)
-curses.noecho()
-curses.curs_set(0)
-win.border(0)
-win.nodelay(1)
+#creating turtle screen
+screen = turtle.Screen()
+screen.title('DATAFLAIR-SNAKE GAME BY')
+screen.setup(width = 700, height = 700)
+screen.tracer(0)
+turtle.bgcolor('turquoise')
 
-key = KEY_RIGHT                                                    # Initializing values
+
+
+##creating a border for our game
+
+turtle.speed(5)
+turtle.pensize(4)
+turtle.penup()
+turtle.goto(-310,250)
+turtle.pendown()
+turtle.color('black')
+turtle.forward(600)
+turtle.right(90)
+turtle.forward(500)
+turtle.right(90)
+turtle.forward(600)
+turtle.right(90)
+turtle.forward(500)
+turtle.penup()
+turtle.hideturtle()
+
+#score
 score = 0
-
-snake = [[4,10], [4,9], [4,8]]                                     # Initial snake co-ordinates
-food = [10,20]                                                     # First food co-ordinates
-
-win.addch(food[0], food[1], '*')                                   # Prints the food
-
-while key != 27:                                                   # While Esc key is not pressed
-    win.border(0)
-    win.addstr(0, 2, 'Score : ' + str(score) + ' ')                # Printing 'Score' and
-    win.addstr(0, 27, ' SNAKE ')                                   # 'SNAKE' strings
-    win.timeout(150 - (len(snake)/5 + len(snake)/10)%120)          # Increases the speed of Snake as its length increases
-    
-    prevKey = key                                                  # Previous key pressed
-    event = win.getch()
-    key = key if event == -1 else event 
+delay = 0.1
 
 
-    if key == ord(' '):                                            # If SPACE BAR is pressed, wait for another
-        key = -1                                                   # one (Pause/Resume)
-        while key != ord(' '):
-            key = win.getch()
-        key = prevKey
-        continue
+#snake
+snake = turtle.Turtle()
+snake.speed(0)
+snake.shape('square')
+snake.color("black")
+snake.penup()
+snake.goto(0,0)
+snake.direction = 'stop'
 
-    if key not in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, 27]:     # If an invalid key is pressed
-        key = prevKey
 
-    # Calculates the new coordinates of the head of the snake. NOTE: len(snake) increases.
-    # This is taken care of later at [1].
-    snake.insert(0, [snake[0][0] + (key == KEY_DOWN and 1) + (key == KEY_UP and -1), snake[0][1] + (key == KEY_LEFT and -1) + (key == KEY_RIGHT and 1)])
+#food
+fruit = turtle.Turtle()
+fruit.speed(0)
+fruit.shape('circle')
+fruit.color('red')
+fruit.penup()
+fruit.goto(30,30)
 
-    # If snake crosses the boundaries, make it enter from the other side
-    if snake[0][0] == 0: snake[0][0] = 18
-    if snake[0][1] == 0: snake[0][1] = 58
-    if snake[0][0] == 19: snake[0][0] = 1
-    if snake[0][1] == 59: snake[0][1] = 1
+old_fruit=[]
 
-    # Exit if snake crosses the boundaries (Uncomment to enable)
-    #if snake[0][0] == 0 or snake[0][0] == 19 or snake[0][1] == 0 or snake[0][1] == 59: break
+#scoring
+scoring = turtle.Turtle()
+scoring.speed(0)
+scoring.color("black")
+scoring.penup()
+scoring.hideturtle()
+scoring.goto(0,300)
+scoring.write("Score :",align="center",font=("Courier",24,"bold"))
 
-    # If snake runs over itself
-    if snake[0] in snake[1:]: break
 
-    
-    if snake[0] == food:                                            # When snake eats the food
-        food = []
-        score += 1
-        while food == []:
-            food = [randint(1, 18), randint(1, 58)]                 # Calculating next food's coordinates
-            if food in snake: food = []
-        win.addch(food[0], food[1], '*')
-    else:    
-        last = snake.pop()                                          # [1] If it does not eat the food, length decreases
-        win.addch(last[0], last[1], ' ')
-    win.addch(snake[0][0], snake[0][1], '#')
-    
-curses.endwin()
-print("\nScore - " + str(score))
-print("http://bitemelater.in\n")
+#######define how to move
+def snake_go_up():
+    if snake.direction != "down":
+        snake.direction = "up"
+
+def snake_go_down():
+    if snake.direction != "up":
+        snake.direction = "down"
+
+def snake_go_left():
+    if snake.direction != "right":
+        snake.direction = "left"
+
+def snake_go_right():
+    if snake.direction != "left":
+        snake.direction = "right"
+
+def snake_move():
+    if snake.direction == "up":
+        y = snake.ycor()
+        snake.sety(y + 20)
+
+    if snake.direction == "down":
+        y = snake.ycor()
+        snake.sety(y - 20)
+
+    if snake.direction == "left":
+        x = snake.xcor()
+        snake.setx(x - 20)
+
+    if snake.direction == "right":
+        x = snake.xcor()
+        snake.setx(x + 20)
+
+# Keyboard bindings
+screen.listen()
+screen.onkeypress(snake_go_up, "Up")
+screen.onkeypress(snake_go_down, "Down")
+screen.onkeypress(snake_go_left, "Left")
+screen.onkeypress(snake_go_right, "Right")
+
+#main loop
+
+while True:
+        screen.update()
+            #snake and fruit coliisions
+        if snake.distance(fruit)< 20:
+                x = random.randint(-290,270)
+                y = random.randint(-240,240)
+                fruit.goto(x,y)
+                scoring.clear()
+                score+=1
+                scoring.write("Score:{}".format(score),align="center",font=("Courier",24,"bold"))
+                delay-=0.001
+                
+                ## creating new_ball
+                new_fruit = turtle.Turtle()
+                new_fruit.speed(0)
+                new_fruit.shape('square')
+                new_fruit.color('red')
+                new_fruit.penup()
+                old_fruit.append(new_fruit)
+                
+
+        #adding ball to snake
+        
+        for index in range(len(old_fruit)-1,0,-1):
+                a = old_fruit[index-1].xcor()
+                b = old_fruit[index-1].ycor()
+
+                old_fruit[index].goto(a,b)
+                                     
+        if len(old_fruit)>0:
+                a= snake.xcor()
+                b = snake.ycor()
+                old_fruit[0].goto(a,b)
+        snake_move()
+
+        ##snake and border collision    
+        if snake.xcor()>280 or snake.xcor()< -300 or snake.ycor()>240 or snake.ycor()<-240:
+                time.sleep(1)
+                screen.clear()
+                screen.bgcolor('turquoise')
+                scoring.goto(0,0)
+                scoring.write("  THANKS BY MK GAME OVER \n Your Score is {}".format(score),align="center",font=("Courier",30,"bold"))
+
+
+        ## snake collision
+        for food in old_fruit:
+                if food.distance(snake) < 20:
+                        time.sleep(1)
+                        screen.clear()
+                        screen.bgcolor('turquoise')
+                        scoring.goto(0,0)
+                        scoring.write("  THANKS BY MK GAME OVER \n Your Score is {}".format(score),align="center",font=("Courier",30,"bold"))
+
+
+                
+        time.sleep(delay)
+
+turtle.Terminator()
